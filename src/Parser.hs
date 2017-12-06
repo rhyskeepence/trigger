@@ -9,7 +9,7 @@ import qualified Data.Yaml as Y
 
 data Config = Config {
   files :: [Text]
-, build :: Maybe [Text]
+, tasks :: Maybe [Text]
 , run :: Maybe [Text]  
 } deriving (Eq, Show, Generic, Y.FromJSON)
 

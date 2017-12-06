@@ -1,11 +1,11 @@
 - files: 
     - "**/*.hs"
-  build: 
+  tasks: 
     - "stack build"
   run:
     - "stack exec"
   
 - files: 
     - "**/*.elm"
-  build:
+  tasks:
     - "elm-make"

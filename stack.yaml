@@ -1,0 +1,7 @@
+resolver: lts-9.17
+packages:
+- .
+extra-deps: 
+- twitch-0.1.7.1
+flags: {}
+extra-package-dbs: []

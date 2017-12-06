@@ -1,5 +1,5 @@
 module Trigger 
-  ( main 
+  ( run 
   ) where
 
 
@@ -12,20 +12,21 @@ import qualified Twitch as T
 twitchOpts :: T.Options
 twitchOpts = T.Options T.NoLogger Nothing Nothing True T.DebounceDefault 0 0 False
 
-main :: [Config] -> IO ()
-main configs =
+run :: [Config] -> IO ()
+run configs =
   T.defaultMainWithOptions twitchOpts $ sequenceA_ (configToDep <$> configs)
 
 
 configToDep :: Config -> T.DepM ()  
 configToDep (Config filesToWatch (Just tasksToRun) _) = 
-  mapM_ (addDepForFileGlob . toS) filesToWatch
-  where 
-    addDepForFileGlob :: FilePath -> T.Dep 
-    addDepForFileGlob fileGlob = 
-      T.addModify 
-        (\_ -> mapM_ (P.system . toS) tasksToRun) 
-        (fromString fileGlob)
+  mapM_ (fileGlobToDep tasksToRun) filesToWatch
 
 configToDep (Config _ Nothing _) = 
   return ()
+
+
+fileGlobToDep :: [Text] -> Text -> T.Dep
+fileGlobToDep tasksToRun filesToWatch = 
+      T.addModify 
+        (\_ -> mapM_ (P.system . toS) tasksToRun) 
+        (fromString $ toS filesToWatch)

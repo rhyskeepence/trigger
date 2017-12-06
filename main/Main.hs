@@ -2,7 +2,11 @@ module Main where
 
 import Protolude
 
+import Parser
+import Trigger
+
+
 main :: IO ()
 main = do
-  putStrLn "hello world"
-  
+  config <- loadAndParse "trigger.yaml"
+  run config

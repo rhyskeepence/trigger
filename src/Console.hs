@@ -34,9 +34,9 @@ printCompleted start end = do
   currentTime <- getCurrentTime
   let duration = format timeSpecs start end
   setSGR [SetColor Foreground Vivid Cyan]
-  putStr $ "\nCompleted in " <> toS duration <> " at " <> show currentTime <> " - "
+  putStr $ "\nCompleted in " <> toS duration <> " at " <> show currentTime
   setSGR [Reset]
-  putStrLn "Waiting..."
+  putStrLn " - Waiting..."
 
 printTerminated :: Text -> ExitCode -> IO ()
 printTerminated command exitCode = do

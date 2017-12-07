@@ -28,6 +28,7 @@ library
   default-extensions:  NoImplicitPrelude
   exposed-modules:     Parser
                      , Trigger
+                     , Watcher
 
 executable trigger
   hs-source-dirs:      main

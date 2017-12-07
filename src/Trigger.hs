@@ -4,6 +4,7 @@ module Trigger
   ( run
   ) where
 
+import           Console
 import           Parser
 import           Protolude
 import qualified System.FSNotify as FS
@@ -21,7 +22,6 @@ run :: [Config] -> IO ()
 run configs = do
   runningState <- newMVar []
   managers <- mapM (runConfig runningState) configs
-  putStrLn "Type anything to quit"
   _ <- getLine
   mapM_ FS.stopManager managers
 
@@ -30,8 +30,9 @@ runConfig runningState config = watch config (handleFileChange runningState conf
 
 handleFileChange :: MVar RunningProcesses -> Config -> FilePath -> IO ()
 handleFileChange runningState config file = do
-  putStrLn $ file ++ " changed"
+  printFileChanged file
   modifyMVar_ runningState (restartProcesses config)
+
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses Config {..} runningProcesses = do
@@ -39,23 +40,30 @@ restartProcesses Config {..} runningProcesses = do
   runTasks _tasks
   mapM startProcess (concat _run)
 
+
 runTasks :: Maybe [Text] -> IO ()
-runTasks tasks = mapM_ (P.system . toS) (concat tasks)
+runTasks tasks = mapM_ runProcess (concat tasks)
+
+runProcess :: Text -> IO ()
+runProcess cmd = do
+  printRunningTask cmd
+  exitCode <- P.system $ toS cmd
+  printTaskFinished exitCode
 
 startProcess :: Text -> IO RunningProcess
 startProcess cmd = do
   processHandle <- P.spawnCommand $ toS cmd
-  putStrLn $ "Started: " <> toS cmd
+  printStartingRunTask cmd
   return $ RunningProcess cmd processHandle
 
 terminate :: RunningProcess -> IO ()
 terminate RunningProcess {..} = do
-  putStrLn "Terminating"
+  printTerminatingRunTask cmd
   exit <- P.getProcessExitCode processHandle
   case exit of
     Nothing -> do
       P.terminateProcess processHandle
       exitCode <- P.waitForProcess processHandle
-      putStrLn $ toS cmd <> " exited (" <> show exitCode <> ")"
+      printTerminated cmd exitCode
     Just exitCode ->
-      putStrLn $ toS cmd <> " had already terminated (" <> show exitCode <> toS ")"
+      printAlreadyTerminated cmd exitCode

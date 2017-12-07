@@ -35,7 +35,6 @@ handleFileChange runningState config file = do
   printFileChanged file
   modifyMVar_ runningState (restartProcesses config)
 
-
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses Config {..} runningProcesses = do
   start <- C.getTime C.Monotonic
@@ -45,7 +44,6 @@ restartProcesses Config {..} runningProcesses = do
   end <- C.getTime C.Monotonic
   printCompleted start end
   return processes
-
 
 runTasks :: Maybe [Text] -> IO ()
 runTasks tasks = mapM_ runProcess (concat tasks)

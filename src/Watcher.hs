@@ -18,13 +18,13 @@ watch :: Config -> Handler -> IO FS.WatchManager
 watch config handler = do
   baseDirectory <- getBaseDirectory config
   directoriesToWatch <- getDirectoriesToWatch baseDirectory
-  T.runWithConfig baseDirectory (twitchConfig directoriesToWatch) $ configToDep config handler
+  T.runWithConfig baseDirectory (twitchConfig directoriesToWatch) $ registerAllHandlers config handler
 
-configToDep :: Config -> Handler -> T.Dep
-configToDep config handler = mapM_ (fileGlobToDep handler) (_files config)
+registerAllHandlers :: Config -> Handler -> T.Dep
+registerAllHandlers Config {..} handler = mapM_ (registerHandler handler) _files
 
-fileGlobToDep :: Handler -> Text -> T.Dep
-fileGlobToDep handler fileGlob = T.addModify handler (fromString $ toS fileGlob)
+registerHandler :: Handler -> Text -> T.Dep
+registerHandler handler fileGlob = T.addModify handler (fromString $ toS fileGlob)
 
 watchConfig :: FS.WatchConfig
 watchConfig =

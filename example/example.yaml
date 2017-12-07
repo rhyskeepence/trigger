@@ -1,11 +1,13 @@
-- files: 
+- dir: "src"
+  files:
     - "**/*.hs"
   tasks: 
     - "stack build"
   run:
     - "stack exec"
   
-- files: 
+- dir: "client"
+  files:
     - "**/*.elm"
   tasks:
     - "elm-make"

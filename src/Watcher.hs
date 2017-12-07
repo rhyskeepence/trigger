@@ -16,15 +16,22 @@ type Handler = FilePath -> IO ()
 
 watch :: Config -> Handler -> IO FS.WatchManager
 watch config handler = do
-  baseDirectory <- getBaseDirectory config
-  directoriesToWatch <- getDirectoriesToWatch baseDirectory
-  T.runWithConfig baseDirectory (twitchConfig directoriesToWatch) $ registerAllHandlers config handler
+  currentDir <- getCurrentDirectory
+  baseDirectories <- mapM toAbsoluteDirectory (_dirs config)
+  directoriesToWatch <- getDirectoriesToWatch baseDirectories
+  T.runWithConfig currentDir (twitchConfig directoriesToWatch) $ registerAllHandlers config handler
 
 registerAllHandlers :: Config -> Handler -> T.Dep
-registerAllHandlers Config {..} handler = mapM_ (registerHandler handler) _files
+registerAllHandlers config handler = mapM_ (registerHandler handler) (allFilePaths config)
 
-registerHandler :: Handler -> Text -> T.Dep
+registerHandler :: Handler -> FilePath -> T.Dep
 registerHandler handler fileGlob = T.addModify handler (fromString $ toS fileGlob)
+
+allFilePaths :: Config -> [FilePath]
+allFilePaths Config {..} =
+  let createFilePaths :: Text -> [FilePath]
+      createFilePaths dir = map (\file -> toS dir </> toS file) _files
+  in foldl (\acc dir -> acc ++ createFilePaths dir) [] _dirs
 
 watchConfig :: FS.WatchConfig
 watchConfig =
@@ -32,17 +39,19 @@ watchConfig =
   {FS.confDebounce = FS.Debounce $ fromRational 200000, FS.confPollInterval = 0, FS.confUsePolling = False}
 
 twitchConfig :: [FilePath] -> T.Config
-twitchConfig dirsToWatch = T.Config {logger = const $ return (), dirs = dirsToWatch, watchConfig = watchConfig}
+twitchConfig dirsToWatch = T.Config {logger = print, dirs = dirsToWatch, watchConfig = watchConfig}
 
-getBaseDirectory :: Config -> IO FilePath
-getBaseDirectory Config {..} = do
+toAbsoluteDirectory :: Text -> IO FilePath
+toAbsoluteDirectory filePath = do
   currentDir <- getCurrentDirectory
-  makeAbsolute $ currentDir </> toS _dir
+  makeAbsolute $ currentDir </> toS filePath
 
-getDirectoriesToWatch :: FilePath -> IO [FilePath]
-getDirectoriesToWatch baseDirectory = do
-  subDirs <- findAllDirs baseDirectory
-  return $ baseDirectory : subDirs
+getDirectoriesToWatch :: [FilePath] -> IO [FilePath]
+getDirectoriesToWatch = foldMap getDirectories
+  where
+    getDirectories baseDirectory = do
+      subDirs <- findAllDirs baseDirectory
+      return $ baseDirectory : subDirs
 
 findAllDirs :: FilePath -> IO [FilePath]
 findAllDirs path = do

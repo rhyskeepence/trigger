@@ -11,5 +11,5 @@ spec = describe "Parser" $ do
   it "can parse example.yaml" $ do
     config <- loadAndParse "example/example.yaml"
     config `shouldBe` 
-      [ Config "src" ["**/*.hs"] (Just ["stack build"]) (Just ["stack exec"])
-      , Config "client" ["**/*.elm"] (Just ["elm-make"]) Nothing]
+      [ Config ["src"] ["**/*.hs"] (Just ["stack build"]) (Just ["stack exec"])
+      , Config ["client"] ["**/*.elm"] (Just ["elm-make"]) Nothing]

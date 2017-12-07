@@ -10,7 +10,7 @@ import qualified Data.Yaml        as Y
 import           Protolude
 
 data Config = Config
-  { _dir :: Text
+  { _dirs :: [Text]
   , _files :: [Text]
   , _tasks :: Maybe [Text]
   , _run   :: Maybe [Text]

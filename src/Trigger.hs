@@ -15,32 +15,29 @@ data RunningProcess = RunningProcess
   , processHandle :: P.ProcessHandle
   }
 
-newtype RunState = RunState
-  { runningProcesses :: [RunningProcess]
-  }
+type RunningProcesses = [RunningProcess]
 
 run :: [Config] -> IO ()
 run configs = do
-  runningState <- newMVar $ RunState []
+  runningState <- newMVar []
   managers <- mapM (runConfig runningState) configs
   putStrLn "Type anything to quit"
   _ <- getLine
   mapM_ FS.stopManager managers
 
-runConfig :: MVar RunState -> Config -> IO FS.WatchManager
+runConfig :: MVar RunningProcesses -> Config -> IO FS.WatchManager
 runConfig runningState config = watch config (handleFileChange runningState config)
 
-handleFileChange :: MVar RunState -> Config -> FilePath -> IO ()
+handleFileChange :: MVar RunningProcesses -> Config -> FilePath -> IO ()
 handleFileChange runningState config file = do
   putStrLn $ file ++ " changed"
   modifyMVar_ runningState (restartProcesses config)
 
-restartProcesses :: Config -> RunState -> IO RunState
-restartProcesses Config {..} RunState {..} = do
+restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
+restartProcesses Config {..} runningProcesses = do
   mapM_ terminate runningProcesses
   runTasks _tasks
-  handles <- mapM startProcess (concat _run)
-  return $ RunState handles
+  mapM startProcess (concat _run)
 
 runTasks :: Maybe [Text] -> IO ()
 runTasks tasks = mapM_ (P.system . toS) (concat tasks)

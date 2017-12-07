@@ -1,10 +1,9 @@
 module Main where
 
-import Protolude
+import           Protolude
 
-import Parser
-import Trigger
-
+import           Parser
+import           Trigger
 
 main :: IO ()
 main = do

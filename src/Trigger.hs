@@ -6,16 +6,16 @@ module Trigger
 
 import           Parser
 import           Protolude
-import qualified System.FSNotify  as FS
-import qualified System.Process   as P
+import qualified System.FSNotify as FS
+import qualified System.Process  as P
 import           Watcher
 
 data RunningProcess = RunningProcess
-  { cmd :: Text
+  { cmd           :: Text
   , processHandle :: P.ProcessHandle
   }
 
-data RunState = RunState
+newtype RunState = RunState
   { runningProcesses :: [RunningProcess]
   }
 

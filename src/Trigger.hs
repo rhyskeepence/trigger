@@ -28,12 +28,18 @@ run configs = do
   mapM_ FS.stopManager managers
 
 runConfig :: MVar RunningProcesses -> Config -> IO FS.WatchManager
-runConfig runningState config = watch config (handleFileChange runningState config)
+runConfig runningState config = do
+  modifyMVar_ runningState (initialStartProcesses config)
+  watch config (handleFileChange runningState config)
 
 handleFileChange :: MVar RunningProcesses -> Config -> FilePath -> IO ()
 handleFileChange runningState config file = do
   printFileChanged file
   modifyMVar_ runningState (restartProcesses config)
+
+initialStartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
+initialStartProcesses Config {..} _ =
+  mapM startProcess (concat _run)
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses Config {..} runningProcesses = do
@@ -43,6 +49,7 @@ restartProcesses Config {..} runningProcesses = do
   processes <- mapM startProcess (concat _run)
   end <- C.getTime C.Monotonic
   printCompleted start end
+  threadDelay 200000
   return processes
 
 runTasks :: Maybe [Text] -> IO ()

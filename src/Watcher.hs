@@ -36,7 +36,7 @@ allFilePaths Config {..} =
 watchConfig :: FS.WatchConfig
 watchConfig =
   FS.WatchConfig
-  {FS.confDebounce = FS.Debounce $ fromRational 200000, FS.confPollInterval = 0, FS.confUsePolling = False}
+  {FS.confDebounce = FS.DebounceDefault, FS.confPollInterval = 0, FS.confUsePolling = False}
 
 twitchConfig :: [FilePath] -> T.Config
 twitchConfig dirsToWatch = T.Config {logger = print, dirs = dirsToWatch, watchConfig = watchConfig}

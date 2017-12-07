@@ -21,6 +21,7 @@ library
                      , filepath
                      , formatting
                      , fsnotify
+                     , Glob
                      , process
                      , protolude
                      , time

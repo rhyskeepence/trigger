@@ -12,6 +12,7 @@ import           Protolude
 data Config = Config
   { _dirs :: [Text]
   , _files :: [Text]
+  , _ignore :: Maybe [Text]
   , _tasks :: Maybe [Text]
   , _run   :: Maybe [Text]
   } deriving (Eq, Show, Generic)

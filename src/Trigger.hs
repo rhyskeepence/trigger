@@ -15,19 +15,19 @@ run :: [Config] -> IO ()
 run configs = T.defaultMainWithOptions twitchOpts $ mapM_ configToDep configs
 
 configToDep :: Config -> T.DepM ()
-configToDep (Config filesToWatch (Just tasksToRun) _) =
-  mapM_ (fileGlobToDep tasksToRun) filesToWatch
+configToDep config =
+  mapM_ (fileGlobToDep config) (_files config)
 
-configToDep (Config _ Nothing _) =
-  return ()
-
-fileGlobToDep :: [Text] -> Text -> T.Dep
-fileGlobToDep tasksToRun filesToWatch =
+fileGlobToDep :: Config -> Text -> T.Dep
+fileGlobToDep config fileGlob =
   T.addModify
-    (handleChange tasksToRun)
-    (fromString $ toS filesToWatch)
+    (handleChange config)
+    (fromString $ toS fileGlob)
 
-handleChange :: [Text] -> FilePath -> IO ()
-handleChange tasksToRun _ =
-  mapM_ (P.system . toS) tasksToRun
+handleChange :: Config -> FilePath -> IO ()
+handleChange config _ =
+  runAll (_tasks config)
 
+runAll :: Maybe [Text] -> IO ()
+runAll tasks =
+  mapM_ (P.system . toS) (concat tasks)

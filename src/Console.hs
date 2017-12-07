@@ -1,15 +1,19 @@
 module Console where
 
+import           Data.Time
+import           Formatting
+import           Formatting.Clock
 import           Protolude
+import           System.Clock
 import           System.Console.ANSI
-import qualified System.IO
+import qualified System.IO as IO
 
 printFileChanged :: FilePath -> IO ()
 printFileChanged file = do
   putStr "\nFile "
   printCommand $ toS file
   putStr " changed.\n"
-  System.IO.hFlush stdout
+  IO.hFlush stdout
 
 printStartingRunTask :: Text -> IO ()
 printStartingRunTask = printCommandAndDescription $ toS "Starting"
@@ -23,7 +27,16 @@ printTerminatingRunTask = printCommandAndDescription $ toS "Terminating"
 printTaskFinished :: ExitCode -> IO ()
 printTaskFinished exitCode = do
   printExitCode exitCode
-  System.IO.hFlush stdout
+  IO.hFlush stdout
+
+printCompleted :: TimeSpec -> TimeSpec -> IO ()
+printCompleted start end = do
+  currentTime <- getCurrentTime
+  let duration = format timeSpecs start end
+  setSGR [SetColor Foreground Vivid Cyan]
+  putStr $ "\nCompleted in " <> toS duration <> " at " <> show currentTime <> " - "
+  setSGR [Reset]
+  putStrLn "Waiting..."
 
 printTerminated :: Text -> ExitCode -> IO ()
 printTerminated command exitCode = do
@@ -32,14 +45,14 @@ printTerminated command exitCode = do
   putStr "\n"
   printExitCode exitCode
   setSGR [Reset]
-  System.IO.hFlush stdout
+  IO.hFlush stdout
 
 printAlreadyTerminated :: Text -> ExitCode -> IO ()
 printAlreadyTerminated command exitCode = do
   printCommand command
   putStr " had already terminated.\n"
   printExitCode exitCode
-  System.IO.hFlush stdout
+  IO.hFlush stdout
 
 printExitCode :: ExitCode -> IO ()
 printExitCode ExitSuccess = do
@@ -58,7 +71,7 @@ printCommandAndDescription description command = do
   printCommand command
   putStr "\n"
   setSGR [Reset]
-  System.IO.hFlush stdout
+  IO.hFlush stdout
 
 printCommand :: Text -> IO ()
 printCommand command = do

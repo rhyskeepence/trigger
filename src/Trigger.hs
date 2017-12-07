@@ -9,6 +9,7 @@ import           Parser
 import           Protolude
 import qualified System.FSNotify as FS
 import qualified System.Process  as P
+import qualified System.Clock as C
 import           Watcher
 
 data RunningProcess = RunningProcess
@@ -22,6 +23,7 @@ run :: [Config] -> IO ()
 run configs = do
   runningState <- newMVar []
   managers <- mapM (runConfig runningState) configs
+  putStrLn "Waiting..."
   _ <- getLine
   mapM_ FS.stopManager managers
 
@@ -36,9 +38,13 @@ handleFileChange runningState config file = do
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses Config {..} runningProcesses = do
+  start <- C.getTime C.Monotonic
   mapM_ terminate runningProcesses
   runTasks _tasks
-  mapM startProcess (concat _run)
+  processes <- mapM startProcess (concat _run)
+  end <- C.getTime C.Monotonic
+  printCompleted start end
+  return processes
 
 
 runTasks :: Maybe [Text] -> IO ()

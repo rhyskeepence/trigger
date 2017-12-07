@@ -16,8 +16,10 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , ansi-terminal
+                     , clock
                      , directory
                      , filepath
+                     , formatting
                      , fsnotify
                      , process
                      , protolude

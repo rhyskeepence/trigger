@@ -5,7 +5,7 @@
   tasks: 
     - "stack build"
   run:
-    - "stack exec"
+    - command: "stack exec"
   
 - dirs:
     - "client"

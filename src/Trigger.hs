@@ -5,11 +5,13 @@ module Trigger
   ) where
 
 import           Console
+import qualified Data.List       as L
+import qualified Data.Text       as T
 import           Parser
 import           Protolude
+import qualified System.Clock    as C
 import qualified System.FSNotify as FS
 import qualified System.Process  as P
-import qualified System.Clock as C
 import           Watcher
 
 data RunningProcess = RunningProcess
@@ -38,8 +40,7 @@ handleFileChange runningState config file = do
   modifyMVar_ runningState (restartProcesses config)
 
 initialStartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
-initialStartProcesses Config {..} _ =
-  mapM startProcess (concat _run)
+initialStartProcesses Config {..} _ = mapM startProcess (concat _run)
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses Config {..} runningProcesses = do
@@ -61,11 +62,11 @@ runProcess cmd = do
   exitCode <- P.system $ toS cmd
   printTaskFinished exitCode
 
-startProcess :: Text -> IO RunningProcess
-startProcess cmd = do
-  processHandle <- P.spawnCommand $ toS cmd
-  printStartingRunTask cmd
-  return $ RunningProcess cmd processHandle
+startProcess :: RunConfig -> IO RunningProcess
+startProcess RunConfig {..} = do
+  (_, _, _, processHandle) <- P.createProcess_ (toS _command) $ process _workingDir _command
+  printStartingRunTask _command
+  return $ RunningProcess _command processHandle
 
 terminate :: RunningProcess -> IO ()
 terminate RunningProcess {..} = do
@@ -76,5 +77,30 @@ terminate RunningProcess {..} = do
       P.terminateProcess processHandle
       exitCode <- P.waitForProcess processHandle
       printTerminated cmd exitCode
-    Just exitCode ->
-      printAlreadyTerminated cmd exitCode
+    Just exitCode -> printAlreadyTerminated cmd exitCode
+
+process :: Maybe Text -> Text -> P.CreateProcess
+process workingDir command =
+  P.CreateProcess
+  { cmdspec = splitCommand command
+  , cwd = map toS workingDir
+  , env = Nothing
+  , std_in = P.Inherit
+  , std_out = P.Inherit
+  , std_err = P.Inherit
+  , close_fds = False
+  , create_group = False
+  , delegate_ctlc = False
+  , detach_console = False
+  , create_new_console = False
+  , new_session = False
+  , child_group = Nothing
+  , child_user = Nothing
+  }
+
+splitCommand :: Text -> P.CmdSpec
+splitCommand command =
+  let cmdAndArgs = T.words command
+      cmd = fromMaybe T.empty (head cmdAndArgs)
+      args = L.tail cmdAndArgs
+  in P.RawCommand (toS cmd) (map toS args)

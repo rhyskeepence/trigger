@@ -24,6 +24,7 @@ library
                      , Glob
                      , process
                      , protolude
+                     , text
                      , time
                      , twitch
                      , yaml

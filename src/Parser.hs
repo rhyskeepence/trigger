@@ -2,6 +2,7 @@
 
 module Parser
   ( Config(..)
+  , RunConfig(..)
   , loadAndParse
   ) where
 
@@ -14,10 +15,18 @@ data Config = Config
   , _files :: [Text]
   , _ignore :: Maybe [Text]
   , _tasks :: Maybe [Text]
-  , _run   :: Maybe [Text]
+  , _run   :: Maybe [RunConfig]
   } deriving (Eq, Show, Generic)
 
 instance Y.FromJSON Config where
+  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = drop 1}
+
+data RunConfig = RunConfig
+  { _workingDir :: Maybe Text
+  , _command :: Text
+  } deriving (Eq, Show, Generic)
+
+instance Y.FromJSON RunConfig where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = drop 1}
 
 loadAndParse :: FilePath -> IO [Config]

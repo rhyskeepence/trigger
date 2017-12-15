@@ -5,7 +5,7 @@ module Trigger
   ) where
 
 import           Console
-import           Control.Monad.Catch as C
+import qualified Control.Monad.Catch as C
 import qualified Data.List           as L
 import qualified Data.Text           as T
 import           Parser

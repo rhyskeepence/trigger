@@ -57,8 +57,8 @@ Here is an example:
   tasks: 
     - "stack build"
   run:
-    - command: "project/stack exec"
-      workingDir: "project"
+    - command: "target/executable"
+      workingDir: "target"
       env:
         - ["HOST", "localhost"]
         - ["PORT", "1234"]

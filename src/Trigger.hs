@@ -5,6 +5,7 @@ module Trigger
   ) where
 
 import           Console
+import qualified Control.Arrow       as A
 import qualified Control.Monad.Catch as C
 import qualified Data.List           as L
 import qualified Data.Text           as T
@@ -76,7 +77,7 @@ runTask cmd = do
 
 startProcess :: RunConfig -> IO RunningProcess
 startProcess RunConfig {..} = do
-  (_, _, _, processHandle) <- P.createProcess_ (toS _command) $ process _workingDir _command
+  (_, _, _, processHandle) <- P.createProcess_ (toS _command) $ process _workingDir _env _command
   printStartingRunTask _command
   return $ RunningProcess _command processHandle
 
@@ -91,12 +92,12 @@ terminate RunningProcess {..} = do
       printTerminated cmd exitCode
     Just exitCode -> printAlreadyTerminated cmd exitCode
 
-process :: Maybe Text -> Text -> P.CreateProcess
-process workingDir command =
+process :: Maybe Text -> Maybe [(Text, Text)] -> Text -> P.CreateProcess
+process workingDir env command =
   P.CreateProcess
   { cmdspec = splitCommand command
   , cwd = map toS workingDir
-  , env = Nothing
+  , env = map (map (toS A.*** toS)) env
   , std_in = P.Inherit
   , std_out = P.Inherit
   , std_err = P.Inherit

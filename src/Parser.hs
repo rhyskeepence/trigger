@@ -24,6 +24,7 @@ instance Y.FromJSON Config where
 data RunConfig = RunConfig
   { _workingDir :: Maybe Text
   , _command :: Text
+  , _env :: Maybe [(Text,Text)]
   } deriving (Eq, Show, Generic)
 
 instance Y.FromJSON RunConfig where

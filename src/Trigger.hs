@@ -5,13 +5,14 @@ module Trigger
   ) where
 
 import           Console
-import qualified Data.List       as L
-import qualified Data.Text       as T
+import           Control.Monad.Catch as C
+import qualified Data.List           as L
+import qualified Data.Text           as T
 import           Parser
 import           Protolude
-import qualified System.Clock    as C
-import qualified System.FSNotify as FS
-import qualified System.Process  as P
+import qualified System.Clock        as C
+import qualified System.FSNotify     as FS
+import qualified System.Process      as P
 import           Watcher
 
 data RunningProcess = RunningProcess
@@ -43,24 +44,35 @@ initialStartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 initialStartProcesses Config {..} _ = mapM startProcess (concat _run)
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
-restartProcesses Config {..} runningProcesses = do
+restartProcesses config runningProcesses = do
   start <- C.getTime C.Monotonic
   mapM_ terminate runningProcesses
-  runTasks _tasks
-  processes <- mapM startProcess (concat _run)
+  processes <- attemptStart config
   end <- C.getTime C.Monotonic
   printCompleted start end
   threadDelay 200000
   return processes
 
-runTasks :: Maybe [Text] -> IO ()
-runTasks tasks = mapM_ runProcess (concat tasks)
+attemptStart :: Config -> IO RunningProcesses
+attemptStart Config {..} =
+  swallowErrors $ do
+    runTasks _tasks
+    mapM startProcess (concat _run)
+  where
+    swallowErrors :: IO RunningProcesses -> IO RunningProcesses
+    swallowErrors = C.handleAll (\_ -> return [])
 
-runProcess :: Text -> IO ()
-runProcess cmd = do
+runTasks :: Maybe [Text] -> IO ()
+runTasks tasks = mapM_ runTask (concat tasks)
+
+runTask :: Text -> IO ()
+runTask cmd = do
   printRunningTask cmd
   exitCode <- P.system $ toS cmd
   printTaskFinished exitCode
+  case exitCode of
+    ExitSuccess   -> return ()
+    ExitFailure _ -> throwIO exitCode
 
 startProcess :: RunConfig -> IO RunningProcess
 startProcess RunConfig {..} = do

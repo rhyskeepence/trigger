@@ -23,7 +23,7 @@ library
                      , formatting
                      , fsnotify
                      , Glob
-                     , process
+                     , process >= 1.5
                      , protolude
                      , text
                      , time

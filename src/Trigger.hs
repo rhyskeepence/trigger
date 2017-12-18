@@ -109,6 +109,7 @@ process workingDir env command =
   , new_session = False
   , child_group = Nothing
   , child_user = Nothing
+  , use_process_jobs = True
   }
 
 splitCommand :: Text -> P.CmdSpec

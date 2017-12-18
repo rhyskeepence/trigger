@@ -3,5 +3,6 @@ packages:
 - .
 extra-deps: 
 - twitch-0.1.7.1
+- process-1.6.2.0
 flags: {}
 extra-package-dbs: []

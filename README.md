@@ -57,11 +57,7 @@ Here is an example:
   tasks: 
     - "stack build"
   run:
-    - command: "target/executable"
-      workingDir: "target"
-      env:
-        - ["HOST", "localhost"]
-        - ["PORT", "1234"]
+    - "target/executable"      
 ```
 
 Which consists of:
@@ -70,7 +66,4 @@ Which consists of:
 - `files`: one or more file globs. Files that don't match will not trigger. 
 - `ignore`: (optional) one or more file globs. Overrides the above file globs to exclude particular files. 
 - `tasks`: (optional) one or more tasks, which are run sequentially in the foreground. Any error will stop subsequent tasks.
-- `run`: (optional) one or more background processes. *Note: this executes the command directly, rather than using the shell, to improve shutdown behaviour.*
-  - `command`: command and arguments to run in background. *Note: this command is relative to where you start trigger, not the `workingDir`.*
-  - `workingDir`: (optional) override the working directory of the process.
-  - `env`: (optional) additional environment variables for the process
+- `run`: (optional) one or more background processes.

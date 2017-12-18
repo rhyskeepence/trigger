@@ -75,11 +75,12 @@ runTask cmd = do
     ExitSuccess   -> return ()
     ExitFailure _ -> throwIO exitCode
 
-startProcess :: RunConfig -> IO RunningProcess
-startProcess RunConfig {..} = do
-  (_, _, _, processHandle) <- P.createProcess_ (toS _command) $ process _workingDir _env _command
-  printStartingRunTask _command
-  return $ RunningProcess _command processHandle
+startProcess :: Text -> IO RunningProcess
+startProcess command = do
+  (_, _, _, processHandle) <- P.createProcess_ (toS command) $ (P.shell (toS command)) { P.use_process_jobs = True
+                                                                                       , P.create_group = True }
+  printStartingRunTask command
+  return $ RunningProcess command processHandle
 
 terminate :: RunningProcess -> IO ()
 terminate RunningProcess {..} = do
@@ -87,34 +88,7 @@ terminate RunningProcess {..} = do
   exit <- P.getProcessExitCode processHandle
   case exit of
     Nothing -> do
-      P.terminateProcess processHandle
+      P.interruptProcessGroupOf processHandle
       exitCode <- P.waitForProcess processHandle
       printTerminated cmd exitCode
     Just exitCode -> printAlreadyTerminated cmd exitCode
-
-process :: Maybe Text -> Maybe [(Text, Text)] -> Text -> P.CreateProcess
-process workingDir env command =
-  P.CreateProcess
-  { cmdspec = splitCommand command
-  , cwd = map toS workingDir
-  , env = map (map (toS A.*** toS)) env
-  , std_in = P.Inherit
-  , std_out = P.Inherit
-  , std_err = P.Inherit
-  , close_fds = False
-  , create_group = False
-  , delegate_ctlc = False
-  , detach_console = False
-  , create_new_console = False
-  , new_session = False
-  , child_group = Nothing
-  , child_user = Nothing
-  , use_process_jobs = True
-  }
-
-splitCommand :: Text -> P.CmdSpec
-splitCommand command =
-  let cmdAndArgs = T.words command
-      cmd = fromMaybe T.empty (head cmdAndArgs)
-      args = L.tail cmdAndArgs
-  in P.RawCommand (toS cmd) (map toS args)

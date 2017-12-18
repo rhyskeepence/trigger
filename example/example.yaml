@@ -5,11 +5,7 @@
   tasks: 
     - "stack build"
   run:
-    - command: "stack exec"
-      workingDir: "code"
-      env:
-        - ["HOST", "localhost"]
-        - ["PORT", "1234"]
+    - "stack exec"
 
 - dirs:
     - "client"

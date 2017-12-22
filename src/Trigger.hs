@@ -5,10 +5,7 @@ module Trigger
   ) where
 
 import           Console
-import qualified Control.Arrow       as A
 import qualified Control.Monad.Catch as C
-import qualified Data.List           as L
-import qualified Data.Text           as T
 import           Parser
 import           Protolude
 import qualified System.Clock        as C
@@ -87,8 +84,13 @@ terminate RunningProcess {..} = do
   printTerminatingRunTask cmd
   exit <- P.getProcessExitCode processHandle
   case exit of
-    Nothing -> do
-      P.interruptProcessGroupOf processHandle
-      exitCode <- P.waitForProcess processHandle
-      printTerminated cmd exitCode
+    Nothing -> interrupt
     Just exitCode -> printAlreadyTerminated cmd exitCode
+  where
+    interrupt = do
+      P.interruptProcessGroupOf processHandle
+      threadDelay 50000
+      exit <- P.getProcessExitCode processHandle
+      case exit of
+        Nothing -> interrupt
+        Just _ -> printTerminated cmd

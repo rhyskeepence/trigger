@@ -38,13 +38,11 @@ printCompleted start end = do
   setSGR [Reset]
   putStrLn " - Waiting..."
 
-printTerminated :: Text -> ExitCode -> IO ()
-printTerminated command exitCode = do
+printTerminated :: Text -> IO ()
+printTerminated command = do
   putStr "Terminated "
   printCommand command
   putStr "\n"
-  printExitCode exitCode
-  setSGR [Reset]
   IO.hFlush stdout
 
 printAlreadyTerminated :: Text -> ExitCode -> IO ()

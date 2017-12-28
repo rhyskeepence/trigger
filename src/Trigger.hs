@@ -39,7 +39,7 @@ handleFileChange runningState config file = do
   modifyMVar_ runningState (restartProcesses config)
 
 initialStartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
-initialStartProcesses Config {..} _ = mapM startProcess (concat _run)
+initialStartProcesses Config {..} _ = mapM startProcess (concat _exec)
 
 restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 restartProcesses config runningProcesses = do
@@ -55,7 +55,7 @@ attemptStart :: Config -> IO RunningProcesses
 attemptStart Config {..} =
   swallowErrors $ do
     runTasks _tasks
-    mapM startProcess (concat _run)
+    mapM startProcess (concat _exec)
   where
     swallowErrors :: IO RunningProcesses -> IO RunningProcesses
     swallowErrors = C.handleAll (\_ -> return [])

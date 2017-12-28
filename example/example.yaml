@@ -4,7 +4,7 @@
     - "**/*.hs"
   tasks: 
     - "stack build"
-  run:
+  exec:
     - "stack exec"
 
 - dirs:

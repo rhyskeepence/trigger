@@ -56,14 +56,16 @@ Here is an example:
     - "**/Ignored.hs"
   tasks: 
     - "stack build"
-  run:
+  exec:
     - "target/executable"      
 ```
 
 Which consists of:
 
-- `dirs`: one or more directories to watch for changes
-- `files`: one or more file globs. Files that don't match will not trigger. 
+- `dirs`: one or more directories to watch for changes. To reduce file handles, it is best to keep this as scoped as possible (rather than using `.`).
+- `files`: one or more file globs, relative to the current working directory. Files that don't match will not trigger. 
 - `ignore`: (optional) one or more file globs. Overrides the above file globs to exclude particular files. 
 - `tasks`: (optional) one or more tasks, which are run sequentially in the foreground. Any error will stop subsequent tasks.
-- `run`: (optional) one or more background processes.
+- `exec`: (optional) one or more background processes.
+
+This configuration can be repeated for other directories and tasks.

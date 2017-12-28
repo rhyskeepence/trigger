@@ -14,7 +14,7 @@ data Config = Config
   , _files :: [Text]
   , _ignore :: Maybe [Text]
   , _tasks :: Maybe [Text]
-  , _run   :: Maybe [Text]
+  , _exec   :: Maybe [Text]
   } deriving (Eq, Show, Generic)
 
 instance Y.FromJSON Config where

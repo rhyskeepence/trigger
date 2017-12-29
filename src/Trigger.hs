@@ -34,15 +34,15 @@ runConfig runningState config = do
   watch config (handleFileChange runningState config)
 
 handleFileChange :: MVar RunningProcesses -> Config -> FilePath -> IO ()
-handleFileChange runningState config file = do
-  printFileChanged file
-  modifyMVar_ runningState (restartProcesses config)
+handleFileChange runningState config file =
+  modifyMVar_ runningState (restartProcesses config file)
 
 initialStartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
 initialStartProcesses Config {..} _ = mapM startProcess (concat _exec)
 
-restartProcesses :: Config -> RunningProcesses -> IO RunningProcesses
-restartProcesses config runningProcesses = do
+restartProcesses :: Config -> FilePath -> RunningProcesses -> IO RunningProcesses
+restartProcesses config file runningProcesses = do
+  printFileChanged (fromMaybe True (_clearScreen config)) file
   start <- C.getTime C.Monotonic
   mapM_ terminate runningProcesses
   processes <- attemptStart config

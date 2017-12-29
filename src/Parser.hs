@@ -13,6 +13,7 @@ data Config = Config
   { _dirs :: [Text]
   , _files :: [Text]
   , _ignore :: Maybe [Text]
+  , _clearScreen :: Maybe Bool
   , _tasks :: Maybe [Text]
   , _exec   :: Maybe [Text]
   } deriving (Eq, Show, Generic)

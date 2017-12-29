@@ -8,8 +8,9 @@ import           System.Clock
 import           System.Console.ANSI
 import qualified System.IO as IO
 
-printFileChanged :: FilePath -> IO ()
-printFileChanged file = do
+printFileChanged :: Bool -> FilePath -> IO ()
+printFileChanged shouldClearScreen file = do
+  when shouldClearScreen clearScreen
   putStr "\nFile "
   printCommand $ toS file
   putStr " changed.\n"
